@@ -1,0 +1,51 @@
+services:
+  bot:
+    container_name: toilet
+    image: ghcr.io/greek/toilet-bot:master
+    networks:
+      - tnet
+    environment:
+      - DISCORD_PREFIX=${DISCORD_PREFIX}
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - MONGO_DB=${MONGO_DB:-mongodb://root:toilet@database:27017/}${MONGO_NAME:-toilet}
+      - MONGO_NAME=${MONGO_NAME:-toilet}
+      - REDIS_URL=${REDIS_URL:-redis://default:@redis:6379}
+      - LAST_FM_KEY=${LAST_FM_KEY}
+      - LAST_FM_SECRET=${LAST_FM_SECRET}
+    volumes:
+      - ./.env:/usr/src/app/.env:rw
+    depends_on:
+      - database
+      - redis
+
+  # Redis instance used for keeping track of temporary & permanent events.
+  # Not exposed to the internet.
+  redis:
+    container_name: redis
+    image: redis:7.0.4
+    networks:
+      - tnet
+    restart: always
+    command: "redis-server /usr/local/etc/redis/redis.conf --save 20 1 --loglevel warning"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+
+  # MongoDB database to store permenant pieces of data.
+  # Exposed to internet, port ?
+  database:
+    container_name: database
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: toilet
+
+networks:
+  tnet:
+    # ipam:
+    #   driver: default
+    #   config:
+    #     - subnet: "192.168.92.0/24"
+
+volumes:
+  toilet:
