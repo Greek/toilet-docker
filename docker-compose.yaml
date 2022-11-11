@@ -15,10 +15,11 @@ services:
       - LAST_FM_SECRET=${LAST_FM_SECRET}
     volumes:
       - ./.env:/usr/src/app/.env:rw
+      - ./config.json:/usr/src/app/config.json
     depends_on:
       - database
       - redis
-
+    
   # Redis instance used for keeping track of temporary & permanent events.
   # Not exposed to the internet.
   redis:
@@ -58,10 +59,7 @@ services:
 
 networks:
   tnet:
-    # ipam:
-    #   driver: default
-    #   config:
-    #     - subnet: "192.168.92.0/24"
 
 volumes:
   toilet:
+  
